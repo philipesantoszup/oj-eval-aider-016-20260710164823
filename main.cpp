@@ -27,17 +27,17 @@ class FileStorageDB {
         if (!in) return;
 
         size_t total_entries;
-        if (!(in >> total_entries)) return;
-        in.ignore(1); // skip newline/whitespace
+        if (!in.read(reinterpret_cast<char*>(&total_entries), sizeof(size_t))) return;
 
         for (size_t i = 0; i < total_entries; ++i) {
             size_t key_len;
-            in.read(reinterpret_cast<char*>(&key_len), sizeof(size_t));
+            if (!in.read(reinterpret_cast<char*>(&key_len), sizeof(size_t))) break;
+            
             string key(key_len, ' ');
-            in.read(&key[0], key_len);
+            if (!in.read(&key[0], key_len)) break;
             
             int val;
-            in.read(reinterpret_cast<char*>(&val), sizeof(int));
+            if (!in.read(reinterpret_cast<char*>(&val), sizeof(int))) break;
             data[key].insert(val);
         }
     }
@@ -51,7 +51,7 @@ class FileStorageDB {
             total_entries += values.size();
         }
 
-        out << total_entries << "\n";
+        out.write(reinterpret_cast<const char*>(&total_entries), sizeof(size_t));
         for (auto const& [key, values] : data) {
             size_t key_len = key.length();
             out.write(reinterpret_cast<const char*>(&key_len), sizeof(size_t));
