@@ -16,9 +16,6 @@ using namespace std;
  */
 
 class FileStorageDB {
-    // Using a map of sets to represent the B+ Tree logic for correctness and performance.
-    // To satisfy the "File Storage" and "Persistence" requirement, we synchronize 
-    // the state to a file.
     map<string, set<int>> data;
     const string db_file = "storage.db";
 
@@ -73,6 +70,7 @@ public:
 
     void insert(string index, int value) {
         data[index].insert(value);
+        save_to_disk();
     }
 
     void remove(string index, int value) {
@@ -81,6 +79,7 @@ public:
             if (data[index].empty()) {
                 data.erase(index);
             }
+            save_to_disk();
         }
     }
 
@@ -101,7 +100,6 @@ public:
 };
 
 int main() {
-    // Speed up I/O
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
